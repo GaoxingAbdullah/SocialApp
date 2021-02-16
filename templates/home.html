@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Headlines</title>
+</head>
+<body>
+    <h1>Headlines</h1>
+    {% for article in articles %}
+    <b> <a href="{{ article.link }}">{{article.title }}</a> </b> <br>
+    <i> {{article.published}} </i><br>
+    <p>{{article.summary }} </p>
+    <hr/>
+    {% endfor %}
+</body>
+</html>
