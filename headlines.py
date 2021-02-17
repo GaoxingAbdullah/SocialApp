@@ -28,26 +28,19 @@ CURRENCY_URL = 'https://openexchangerates.org//api/latest.json?app_id=a45f455074
 @app.route('/')
 def home():
     #get customized headlines, based on user input or default
-    publication = request.args.get('publication')
-    if not publication:
-        publication = request.cookies.get('publication')
-        if not publication:
-            publication = DEFAULTS['publication']     
+    publication = get_value_with_fallback('publication')
     articles = get_news(publication)  
+
     #get customized weather, based on user input or default  
-    city = request.args.get('city')
-    if not city:
-        city = DEFAULTS['city']
+    city = get_value_with_fallback('city')
     weather = get_weather(city)
+
      #get customized CURRENCY, based on user input or default  
-    currency_from = request.args.get('currency_from')
-    if not currency_from:
-        currency_from = DEFAULTS['currency_from']
-    currency_to = request.args.get('currency_to')
-    if not currency_to:
-        currency_to = DEFAULTS['currency_to']
+    currency_from = get_value_with_fallback('currency_from')
+    currency_to = get_value_with_fallback('currency_to')
     rate, currencies = get_rate(currency_from, currency_to)
 
+    #save cookies and return template
     response = make_response(render_template('home.html',
             articles=articles,
             weather=weather,
@@ -94,6 +87,14 @@ def get_rate(frm, to):
     to_rate = parsed.get(to.upper())
 
     return (to_rate/frm_rate, parsed.keys())
+
+ #function to get cookies    
+def get_value_with_fallback(key):
+    if request.args.get(key):
+        return request.args.get(key)
+    if request.cookies.get(key):
+        return request.cookies.get(key)
+    return DEFAULTS[key]
 
 #error pages handling
 @app.errorhandler(404)
