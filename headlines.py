@@ -1,4 +1,5 @@
-from flask import Flask,render_template, request
+import datetime
+from flask import Flask,render_template, request, make_response
 import feedparser
 import json
 import urllib
@@ -15,7 +16,7 @@ RSS_FEEDS = {'bbc': 'http://feeds.bbci.co.uk/news/rss.xml',
                 'iol': 'http://www.iol.co.za/cmlink/1.640'}
 
 DEFAULTS = { 'publication': 'bbc',
-              'city':'London, UK',
+              'city':'Jinhua, China',
               'currency_from':'GBP',
               'currency_to':'USD'}
 
@@ -29,7 +30,9 @@ def home():
     #get customized headlines, based on user input or default
     publication = request.args.get('publication')
     if not publication:
-        publication = DEFAULTS['publication']
+        publication = request.cookies.get('publication')
+        if not publication:
+            publication = DEFAULTS['publication']     
     articles = get_news(publication)  
     #get customized weather, based on user input or default  
     city = request.args.get('city')
@@ -43,10 +46,20 @@ def home():
     currency_to = request.args.get('currency_to')
     if not currency_to:
         currency_to = DEFAULTS['currency_to']
-    rate = get_rate(currency_from, currency_to)
+    rate, currencies = get_rate(currency_from, currency_to)
 
-    return render_template('home.html', articles=articles, weather=weather, 
-                            currency_from=currency_from, currency_to=currency_to, rate=rate)
+    response = make_response(render_template('home.html',
+            articles=articles,
+            weather=weather,
+            currency_from=currency_from,
+            currency_to=currency_to, rate=rate,
+            currencies=sorted(currencies)))
+    expires = datetime.datetime.now() + datetime.timedelta(days=365) 
+    response.set_cookie('publication', publication, expires=expires) 
+    response.set_cookie('city', city, expires=expires)   
+    response.set_cookie('currency_from', currency_from, expires=expires)  
+    response.set_cookie('currency_to', currency_to, expires=expires)
+    return response
 
 
 def get_news(query):
@@ -80,7 +93,13 @@ def get_rate(frm, to):
     frm_rate = parsed.get(frm.upper())
     to_rate = parsed.get(to.upper())
 
-    return to_rate/frm_rate
-    
+    return (to_rate/frm_rate, parsed.keys())
+
+#error pages handling
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
+
 if __name__ == '__main__':
     app.run(debug=True)
