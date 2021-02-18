@@ -21,8 +21,8 @@ DEFAULTS = { 'publication': 'bbc',
               'currency_to':'USD'}
 
 
-WEATHER_URL = 'http://api.openweathermap.org/data/2.5/weather?q={}&units=metric&appid=f3f19918c10bb785e0007af1d0525d08'
-CURRENCY_URL = 'https://openexchangerates.org//api/latest.json?app_id=a45f455074364ff1a7d5ed38c2b37403'
+WEATHER_URL = 'http://api.openweathermap.org/data/2.5/weather?q={}&units=metric&<appid=your api key>'
+CURRENCY_URL = 'https://openexchangerates.org//api/latest.json?app_id=<your api key>'
 
 
 @app.route('/')
